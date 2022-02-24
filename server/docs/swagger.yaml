@@ -14,6 +14,20 @@ definitions:
       username:
         type: string
     type: object
+  balance.TransferMoney:
+    properties:
+      Money:
+        type: number
+      UserIdFrom:
+        type: integer
+      UserIdTo:
+        type: integer
+    type: object
+  balance.User:
+    properties:
+      userid:
+        type: integer
+    type: object
 host: localhost:8000
 info:
   contact:
@@ -28,7 +42,7 @@ paths:
     post:
       description: Зачислить средства
       parameters:
-      - description: User Data
+      - description: RequestUser
         in: body
         name: user
         required: true
@@ -60,7 +74,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/balance.RequestUser'
+          $ref: '#/definitions/balance.User'
       produces:
       - application/json
       responses: {}
@@ -89,10 +103,10 @@ paths:
       parameters:
       - description: User Data
         in: body
-        name: user
+        name: TransactionsModel
         required: true
         schema:
-          $ref: '#/definitions/balance.RequestMoveMoney'
+          $ref: '#/definitions/balance.TransferMoney'
       produces:
       - application/json
       responses: {}
@@ -103,7 +117,7 @@ paths:
     post:
       description: Регистрация пользователя
       parameters:
-      - description: User Data
+      - description: RequestUser
         in: body
         name: user
         required: true

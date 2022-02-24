@@ -1,0 +1,4 @@
+curl -d '{"userid": 1}' -H "Content-Type: application/json" -X POST http://localhost:8000/api/money?currency=USD
+###
+curl -d '{"userid": 1}' -H "Content-Type: application/json" -X POST http://localhost:8000/api/getmovemoney?page=2&filtermoney=asc&filtertime=desc
+

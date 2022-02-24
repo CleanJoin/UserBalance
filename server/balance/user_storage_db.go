@@ -44,7 +44,7 @@ func (userStorageDB *UserStorageDB) GetByName(name string) (UserModel, error) {
 	commandTag := userStorageDB.connect.QueryRow(context.Background(), query, name)
 	err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash, &userModel.Money)
 	if err != nil {
-		return *userModel, fmt.Errorf(err.Error())
+		return *userModel, fmt.Errorf("пользователь не найден")
 	}
 	return *userModel, nil
 }

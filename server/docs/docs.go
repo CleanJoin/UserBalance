@@ -32,7 +32,7 @@ const docTemplate = `{
                 "summary": "addMoneyHandler",
                 "parameters": [
                     {
-                        "description": "User Data",
+                        "description": "RequestUser",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -77,7 +77,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/balance.RequestUser"
+                            "$ref": "#/definitions/balance.User"
                         }
                     }
                 ],
@@ -121,11 +121,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "User Data",
-                        "name": "user",
+                        "name": "TransactionsModel",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/balance.RequestMoveMoney"
+                            "$ref": "#/definitions/balance.TransferMoney"
                         }
                     }
                 ],
@@ -144,7 +144,7 @@ const docTemplate = `{
                 "summary": "userHandler",
                 "parameters": [
                     {
-                        "description": "User Data",
+                        "description": "RequestUser",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -177,6 +177,28 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "balance.TransferMoney": {
+            "type": "object",
+            "properties": {
+                "Money": {
+                    "type": "number"
+                },
+                "UserIdFrom": {
+                    "type": "integer"
+                },
+                "UserIdTo": {
+                    "type": "integer"
+                }
+            }
+        },
+        "balance.User": {
+            "type": "object",
+            "properties": {
+                "userid": {
+                    "type": "integer"
                 }
             }
         }
