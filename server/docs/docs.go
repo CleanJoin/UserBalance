@@ -10,16 +10,40 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://github.com/CleanJoin/RestChat/",
+        "termsOfService": "https://github.com/CleanJoin/USERBALANCE/",
         "contact": {
             "name": "Github.com",
-            "url": "https://github.com/CleanJoin/RestChat/"
+            "url": "https://github.com/CleanJoin/USERBALANCE/"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/add": {
+            "post": {
+                "description": "Зачислить средства",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Balance"
+                ],
+                "summary": "addMoneyHandler",
+                "parameters": [
+                    {
+                        "description": "User Data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/balance.RequestMoveMoney"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/health": {
             "get": {
                 "description": "get the status of server.",
@@ -36,16 +60,16 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/login": {
+        "/api/money": {
             "post": {
-                "description": "Вход пользователя в чат",
+                "description": "Получить данные о балансе",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Balance"
                 ],
-                "summary": "loginHandler",
+                "summary": "getMoneyUserHadler",
                 "parameters": [
                     {
                         "description": "User Data",
@@ -60,96 +84,48 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/logout": {
+        "/api/reduce": {
             "post": {
-                "description": "Выход пользователя из чата",
+                "description": "Списать денежные средства",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Balance"
                 ],
-                "summary": "logoutHandler",
-                "parameters": [
-                    {
-                        "description": "User ApiToken",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/balance.RequestApiToken"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/members": {
-            "post": {
-                "description": "Получить список online пользователей",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Get Info"
-                ],
-                "summary": "membersHandler",
-                "parameters": [
-                    {
-                        "description": "User ApiToken",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/balance.RequestApiToken"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/message": {
-            "post": {
-                "description": "Отправить сообщение",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "messageHandler",
+                "summary": "reduceMoneyHandler",
                 "parameters": [
                     {
                         "description": "User Data",
-                        "name": "MessageSend",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/balance.RequestMessage"
+                            "$ref": "#/definitions/balance.RequestMoveMoney"
                         }
                     }
                 ],
                 "responses": {}
             }
         },
-        "/api/messages": {
+        "/api/transfer": {
             "post": {
-                "description": "Получить список сообщений",
+                "description": "Перевести деньги от пользователя к пользователю",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Get Info"
+                    "Balance"
                 ],
-                "summary": "messagesHandler",
+                "summary": "transferMoneyHandler",
                 "parameters": [
                     {
-                        "description": "User ApiToken",
+                        "description": "User Data",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/balance.RequestApiToken"
+                            "$ref": "#/definitions/balance.RequestMoveMoney"
                         }
                     }
                 ],
@@ -182,29 +158,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "balance.RequestApiToken": {
+        "balance.RequestMoveMoney": {
             "type": "object",
             "properties": {
-                "api_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "balance.RequestMessage": {
-            "type": "object",
-            "properties": {
-                "api_token": {
-                    "type": "string"
+                "money": {
+                    "type": "number"
                 },
-                "text": {
-                    "type": "string"
+                "userid": {
+                    "type": "integer"
                 }
             }
         },
         "balance.RequestUser": {
             "type": "object",
             "properties": {
-                "password": {
+                "paswword": {
                     "type": "string"
                 },
                 "username": {
@@ -221,8 +189,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8000",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Swagger RestChat",
-	Description:      "This is a sample server Rest API Server Chat.",
+	Title:            "Swagger USERBALANCE",
+	Description:      "This is a sample server USERBALANCE",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

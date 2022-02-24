@@ -11,7 +11,8 @@ type UserModel struct {
 
 type TransactionsModel struct {
 	ID         uint      `json:"id"`
-	UserIdTo   uint      `json:"UserIdTo"`
-	UserIdFrom uint      `json:"UserIdFrom"`
+	UserIdTo   uint      `json:"useridto"`
+	Money      float64   `json:"money"`
+	UserIdFrom uint      `json:"useridfrom"`
 	Time       time.Time `json:"time"` //utc
 }

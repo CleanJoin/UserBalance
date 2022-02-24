@@ -2,22 +2,21 @@ version: "3.3"
 
 services:
 
-
-  restchat_server:
+  
+  server_balance:
     build: server
     ports:
-      - 8000:8000
+      - 8898:3000
     volumes:
-      - ./server:/usr/src/server
+      - ./server/:/usr/src/server
     env_file:
       - .env
-
 
   db:
     image: postgres:latest
     ports:
       - 5432:5432
     volumes:
-        - ./server/db/:/docker-entrypoint-initdb.d/
+        - ./server/db/sql/:/docker-entrypoint-initdb.d/
     env_file:
       - .env

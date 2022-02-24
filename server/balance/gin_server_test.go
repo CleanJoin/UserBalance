@@ -1,21 +1,30 @@
 package balance
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/go-playground/assert"
+	"github.com/joho/godotenv"
 )
 
-// func TestUse(t *testing.T) {
-// 	chatServer := NewChatServerGin("localhost", 8080, 300)
-// 	usersstorage := NewUserStorageMemory(new(PasswordHasherSha1))
-// 	chatServer.Use(sessionStorage, usersstorage, messageStorage)
-// 	if chatServer.router == nil {
-// 		t.Errorf("router не сконфигурирован  %v", chatServer.router)
-// 	}
+func TestUse(t *testing.T) {
+	chatServer := NewServerGin("localhost", 8000)
+	usersstorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+	transactions := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersstorage, transactions)
+	if chatServer.router == nil {
+		t.Errorf("router не сконфигурирован  %v", chatServer.router)
+	}
 
-// }
+}
 
 func TestRun(t *testing.T) {
-	chatServer := NewChatServerGin("localhost", 8080, 300)
+	chatServer := NewServerGin("localhost", 8000)
 	chatServer.Run()
 	if chatServer.router != nil {
 		t.Errorf("router сконфигурирован  %v", chatServer.router)
@@ -55,4 +64,39 @@ func TestValidatePasswordMore(t *testing.T) {
 	if validatePassword(password) {
 		t.Errorf("Длина меньше 32 символов")
 	}
+}
+func TestUserHandler(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	values := map[string]string{"username": "Andrey5", "password": "fghfghfghfgh"}
+	jsonValue, _ := json.Marshal(values)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/user", bytes.NewBuffer(jsonValue))
+
+	chatServer.router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+
+}
+func TestGet(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/health", nil)
+
+	chatServer.router.ServeHTTP(w, req)
+	d := w.Body.String()
+	fmt.Println(d)
+	assert.Equal(t, http.StatusOK, w.Code)
+
 }

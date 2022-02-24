@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/lib/pq"
 )
 
 type UserStorageDB struct {
@@ -41,9 +40,9 @@ func (userStorageDB *UserStorageDB) Create(username string, password string) (Us
 
 func (userStorageDB *UserStorageDB) GetByName(name string) (UserModel, error) {
 	userModel := new(UserModel)
-	query := `select * from "avito".users u where username=$1`
+	query := `select * from "avito".users u where username like $1`
 	commandTag := userStorageDB.connect.QueryRow(context.Background(), query, name)
-	err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash)
+	err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash, &userModel.Money)
 	if err != nil {
 		return *userModel, fmt.Errorf(err.Error())
 	}
@@ -54,28 +53,10 @@ func (userStorageDB *UserStorageDB) GetById(id uint) (UserModel, error) {
 	userModel := new(UserModel)
 	query := `select * from "avito".users u where id=$1`
 	commandTag := userStorageDB.connect.QueryRow(context.Background(), query, id)
-	err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash)
+	err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash, &userModel.Money)
 	if err != nil {
 		return *userModel, fmt.Errorf(err.Error())
 	}
 
 	return *userModel, nil
-}
-
-func (userStorageDB *UserStorageDB) GetByIds(ids []uint) ([]UserModel, error) {
-	userModel := new(UserModel)
-	query := `select * from "avito".users u where id = ANY($1)`
-	commandTag, err := userStorageDB.connect.Query(context.Background(), query, pq.Array(ids))
-	if err != nil {
-		return userStorageDB.Users, fmt.Errorf(err.Error())
-	}
-	for commandTag.Next() {
-		err := commandTag.Scan(&userModel.ID, &userModel.Username, &userModel.PasswordHash, &userModel.Money)
-		userStorageDB.Users = append(userStorageDB.Users, UserModel{userModel.ID, userModel.Username, userModel.PasswordHash, userModel.Money})
-		if err != nil {
-			return userStorageDB.Users, fmt.Errorf(err.Error())
-		}
-	}
-
-	return userStorageDB.Users, nil
 }

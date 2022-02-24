@@ -1,20 +1,15 @@
 basePath: /
 definitions:
-  balance.RequestApiToken:
+  balance.RequestMoveMoney:
     properties:
-      api_token:
-        type: string
-    type: object
-  balance.RequestMessage:
-    properties:
-      api_token:
-        type: string
-      text:
-        type: string
+      money:
+        type: number
+      userid:
+        type: integer
     type: object
   balance.RequestUser:
     properties:
-      password:
+      paswword:
         type: string
       username:
         type: string
@@ -23,12 +18,28 @@ host: localhost:8000
 info:
   contact:
     name: Github.com
-    url: https://github.com/CleanJoin/RestChat/
-  description: This is a sample server Rest API Server Chat.
-  termsOfService: https://github.com/CleanJoin/RestChat/
-  title: Swagger RestChat
+    url: https://github.com/CleanJoin/USERBALANCE/
+  description: This is a sample server USERBALANCE
+  termsOfService: https://github.com/CleanJoin/USERBALANCE/
+  title: Swagger USERBALANCE
   version: "1.0"
 paths:
+  /api/add:
+    post:
+      description: Зачислить средства
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/balance.RequestMoveMoney'
+      produces:
+      - application/json
+      responses: {}
+      summary: addMoneyHandler
+      tags:
+      - Balance
   /api/health:
     get:
       consumes:
@@ -40,9 +51,9 @@ paths:
       summary: Show the status of server.
       tags:
       - Get Info
-  /api/login:
+  /api/money:
     post:
-      description: Вход пользователя в чат
+      description: Получить данные о балансе
       parameters:
       - description: User Data
         in: body
@@ -53,73 +64,41 @@ paths:
       produces:
       - application/json
       responses: {}
-      summary: loginHandler
+      summary: getMoneyUserHadler
       tags:
-      - Auth
-  /api/logout:
+      - Balance
+  /api/reduce:
     post:
-      description: Выход пользователя из чата
-      parameters:
-      - description: User ApiToken
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/balance.RequestApiToken'
-      produces:
-      - application/json
-      responses: {}
-      summary: logoutHandler
-      tags:
-      - Auth
-  /api/members:
-    post:
-      description: Получить список online пользователей
-      parameters:
-      - description: User ApiToken
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/balance.RequestApiToken'
-      produces:
-      - application/json
-      responses: {}
-      summary: membersHandler
-      tags:
-      - Get Info
-  /api/message:
-    post:
-      description: Отправить сообщение
+      description: Списать денежные средства
       parameters:
       - description: User Data
         in: body
-        name: MessageSend
+        name: user
         required: true
         schema:
-          $ref: '#/definitions/balance.RequestMessage'
+          $ref: '#/definitions/balance.RequestMoveMoney'
       produces:
       - application/json
       responses: {}
-      summary: messageHandler
+      summary: reduceMoneyHandler
       tags:
-      - Auth
-  /api/messages:
+      - Balance
+  /api/transfer:
     post:
-      description: Получить список сообщений
+      description: Перевести деньги от пользователя к пользователю
       parameters:
-      - description: User ApiToken
+      - description: User Data
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/balance.RequestApiToken'
+          $ref: '#/definitions/balance.RequestMoveMoney'
       produces:
       - application/json
       responses: {}
-      summary: messagesHandler
+      summary: transferMoneyHandler
       tags:
-      - Get Info
+      - Balance
   /api/user:
     post:
       description: Регистрация пользователя
