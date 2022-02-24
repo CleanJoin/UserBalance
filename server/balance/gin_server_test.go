@@ -1,11 +1,12 @@
 package balance
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/go-playground/assert"
@@ -72,18 +73,30 @@ func TestUserHandler(t *testing.T) {
 	chatServer := NewServerGin("localhost", 8000)
 	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
 	chatServer.Use(usersStorage, balanceStorage)
+	r := rand.Intn(900000000)
 
-	values := map[string]string{"username": "Andrey5", "password": "fghfghfghfgh"}
-	jsonValue, _ := json.Marshal(values)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/user", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("POST", "/api/user", strings.NewReader(`{"username": "Andrey`+strconv.Itoa(r)+`", "password": "Andrey"}`))
 
 	chatServer.router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 
 }
-func TestGet(t *testing.T) {
+func TestGetHealth(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/health", nil)
+	chatServer.router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+}
+
+func TestAddMoneyHandler(t *testing.T) {
 	godotenv.Load(".env")
 	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
 
@@ -92,11 +105,77 @@ func TestGet(t *testing.T) {
 	chatServer.Use(usersStorage, balanceStorage)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/health", nil)
-
-	chatServer.router.ServeHTTP(w, req)
+	req, _ := http.NewRequest("POST", "/api/add", strings.NewReader(`{"userid": 1, "money": 66.1}`))
 	d := w.Body.String()
 	fmt.Println(d)
+	chatServer.router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestReduceMoneyHandler(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/reduce", strings.NewReader(`{"userid": 1, "money": 33.0}`))
+	d := w.Body.String()
+	fmt.Println(d)
+	chatServer.router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestTransferMoneyHandler(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/transfer", strings.NewReader(`{"Money": 1,"UserIdFrom": 2,"UserIdTo": 1}`))
+	d := w.Body.String()
+	fmt.Println(d)
+	chatServer.router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestGetMoneyUserHadler(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/money?currency=USD", strings.NewReader(`{"userid": 1}`))
+	d := w.Body.String()
+	fmt.Println(d)
+	chatServer.router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+}
+
+func TestGetLastTransactionHadler(t *testing.T) {
+	godotenv.Load(".env")
+	usersStorage := NewUserStorageDB(new(PasswordHasherSha1), NewConnectDB(5432))
+
+	chatServer := NewServerGin("localhost", 8000)
+	balanceStorage := NewBalanceStorageDB(NewConnectDB(5432))
+	chatServer.Use(usersStorage, balanceStorage)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/getmovemoney?page=1&filtermoney=asc&filtertime=desc", strings.NewReader(`{"userid": 1}`))
+	d := w.Body.String()
+	fmt.Println(d)
+	chatServer.router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
 }

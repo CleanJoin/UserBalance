@@ -19,7 +19,7 @@ func TestAddMoney(t *testing.T) {
 func TestWriteOffMoney(t *testing.T) {
 	godotenv.Load(".env")
 	var inter ItransactionsStorage = NewBalanceStorageDB(NewConnectDB(5432))
-	transaction, err := inter.WriteOffMoney(1, 33.3)
+	transaction, err := inter.WriteOffMoney(1, 1.3)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -29,7 +29,7 @@ func TestWriteOffMoney(t *testing.T) {
 func TestTransferMoney(t *testing.T) {
 	godotenv.Load(".env")
 	var inter ItransactionsStorage = NewBalanceStorageDB(NewConnectDB(5432))
-	transaction, err := inter.TransferMoney(1, 2, 33.3)
+	transaction, err := inter.TransferMoney(2, 1, 10.0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -44,4 +44,13 @@ func TestAddTransferMoney(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	fmt.Println(transaction)
+}
+func TestListRecords(t *testing.T) {
+	godotenv.Load(".env")
+	var inter ItransactionsStorage = NewBalanceStorageDB(NewConnectDB(5432))
+	_, err := inter.ListRecords(1, "asc", "desc", 1)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
 }

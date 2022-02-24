@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 
 	_ "userbalance/docs"
@@ -17,6 +18,17 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
+
+type Сurrency struct {
+	Query struct {
+		Apikey       string `json:"apikey"`
+		BaseCurrency string `json:"base_currency"`
+		Timestamp    int    `json:"timestamp"`
+	} `json:"query"`
+	Data struct {
+		Rub float64 `json:"RUB"`
+	} `json:"data"`
+}
 
 type ServerGin struct {
 	userStorage         IUserStorage
@@ -29,6 +41,10 @@ type ServerGin struct {
 type RequestMoveMoney struct {
 	UserId int     `json:"userid"`
 	Money  float64 `json:"money"`
+}
+
+type User struct {
+	UserId int `json:"userid"`
 }
 
 type RequestUser struct {
@@ -70,10 +86,10 @@ func (serverGin *ServerGin) Use(userStorage IUserStorage, transactionsStorage It
 	serverGin.router.GET("/api/health", heathHandler())
 	serverGin.router.POST("/api/user", userHandler(serverGin.userStorage))
 	serverGin.router.POST("/api/money", getMoneyUserHadler(serverGin.userStorage))
-	serverGin.router.POST("/api/money?currency=USD", getMoneyUserHadler(serverGin.userStorage))
 	serverGin.router.POST("/api/add", addMoneyHandler(serverGin.transactionsStorage))
 	serverGin.router.POST("/api/reduce", reduceMoneyHandler(serverGin.transactionsStorage))
 	serverGin.router.POST("/api/transfer", transferMoneyHandler(serverGin.transactionsStorage))
+	serverGin.router.POST("/api/getmovemoney", getLastTransactionHadler(serverGin.transactionsStorage))
 	// serverGin.router.GET("https://freecurrencyapi.net/api/v2/latest?apikey=d53f1180-94a8-11ec-992b-13a8f6f1bdf9&base_currency=USD",exchangeHandler())
 
 }
@@ -139,12 +155,6 @@ func userHandler(userStorage IUserStorage) gin.HandlerFunc {
 		if err != nil {
 			ctx.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
-		}
-		usd := ctx.Param("currency")
-		if usd == "USD" {
-			rate := exchangeHandler()
-			userMode.Money = userMode.Money / rate
-			ctx.IndentedJSON(http.StatusCreated, gin.H{"username": userMode.Username, "money": userMode.Money})
 		}
 		ctx.IndentedJSON(http.StatusCreated, gin.H{"username": userMode.Username, "money": userMode.Money})
 	}
@@ -237,11 +247,11 @@ func transferMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerF
 // @Summary getMoneyUserHadler
 // @Description Получить данные о балансе
 // @Produce json
-// @Param user body RequestUser true "User Data"
+// @Param user body User true "User Data"
 // @Router /api/money [post]
 func getMoneyUserHadler(userStorage IUserStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestUser := new(RequestUser)
+		requestUser := new(User)
 
 		statusCode, ctx2, checkBadRequest := validateClientRequest(ctx, requestUser)
 
@@ -250,12 +260,41 @@ func getMoneyUserHadler(userStorage IUserStorage) gin.HandlerFunc {
 			return
 		}
 
-		userModel, err := userStorage.GetByName(requestUser.Username)
+		userModel, err := userStorage.GetById(uint(requestUser.UserId))
 		if err != nil {
 			ctx.IndentedJSON(http.StatusForbidden, err.Error())
 			return
 		}
+		currency := ctx.DefaultQuery("currency", "RUB")
+		if currency == "USD" {
+			rate := exchangeHandler()
+			userModel.Money = userModel.Money / rate
+			ctx.IndentedJSON(http.StatusOK, gin.H{"username": userModel.Username, "money": userModel.Money})
+			return
+		}
 		ctx.IndentedJSON(http.StatusOK, userModel)
+	}
+}
+
+func getLastTransactionHadler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		requestUser := new(User)
+		statusCode, ctx2, checkBadRequest := validateClientRequest(ctx, requestUser)
+
+		if !checkBadRequest {
+			ctx.IndentedJSON(statusCode, ctx2)
+			return
+		}
+		page := ctx.DefaultQuery("page", "1")
+		filtermoney := ctx.DefaultQuery("filtermoney", "desc")
+		filtertime := ctx.DefaultQuery("filtertime", "desc")
+		pageint, _ := strconv.Atoi(page)
+		transactions, err := transactionsStorage.ListRecords(pageint, filtermoney, filtertime, requestUser.UserId)
+		if err != nil {
+			ctx.IndentedJSON(http.StatusBadRequest, err.Error())
+			return
+		}
+		ctx.IndentedJSON(http.StatusOK, transactions)
 	}
 }
 
@@ -264,15 +303,13 @@ func exchangeHandler() float64 {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var dd interface{}
+	dd := new(Сurrency)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err.Error())
 	}
-
-	log.Println(string(body))
 	json.Unmarshal(body, dd)
-	return 80
+	return dd.Data.Rub
 }
 
 func validatenUserName(userName string) bool {
