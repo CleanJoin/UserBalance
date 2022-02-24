@@ -1,16 +1,17 @@
 version: "3.3"
 
 services:
-
-  
-  server_balance:
+  server-balance:
+    depends_on:
+      - db 
     build: server
     ports:
-      - 8898:3000
+      - 8000:8080
     volumes:
       - ./server/:/usr/src/server
     env_file:
       - .env
+
 
   db:
     image: postgres:latest

@@ -69,11 +69,11 @@ func (serverGin *ServerGin) Use(userStorage IUserStorage, transactionsStorage It
 	serverGin.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	serverGin.router.GET("/api/health", heathHandler())
 	serverGin.router.POST("/api/user", userHandler(serverGin.userStorage))
-	serverGin.router.POST("/api/money", GetMoneyUserHadler(serverGin.userStorage))
-	serverGin.router.POST("/api/money?currency=USD", GetMoneyUserHadler(serverGin.userStorage))
-	serverGin.router.POST("/api/add", AddMoneyHandler(serverGin.transactionsStorage))
-	serverGin.router.POST("/api/reduce", ReduceMoneyHandler(serverGin.transactionsStorage))
-	serverGin.router.POST("/api/transfer", TransferMoneyHandler(serverGin.transactionsStorage))
+	serverGin.router.POST("/api/money", getMoneyUserHadler(serverGin.userStorage))
+	serverGin.router.POST("/api/money?currency=USD", getMoneyUserHadler(serverGin.userStorage))
+	serverGin.router.POST("/api/add", addMoneyHandler(serverGin.transactionsStorage))
+	serverGin.router.POST("/api/reduce", reduceMoneyHandler(serverGin.transactionsStorage))
+	serverGin.router.POST("/api/transfer", transferMoneyHandler(serverGin.transactionsStorage))
 	// serverGin.router.GET("https://freecurrencyapi.net/api/v2/latest?apikey=d53f1180-94a8-11ec-992b-13a8f6f1bdf9&base_currency=USD",exchangeHandler())
 
 }
@@ -108,7 +108,7 @@ func heathHandler() gin.HandlerFunc {
 // @Summary userHandler
 // @Description Регистрация пользователя
 // @Produce json
-// @Param user body RequestUser true "User Data"
+// @Param user body RequestUser true "RequestUser"
 // @Router /api/user [post]
 func userHandler(userStorage IUserStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -156,9 +156,9 @@ func userHandler(userStorage IUserStorage) gin.HandlerFunc {
 // @Summary addMoneyHandler
 // @Description Зачислить средства
 // @Produce json
-// @Param user body RequestMoveMoney true "User Data"
+// @Param user body RequestMoveMoney true "RequestUser"
 // @Router /api/add [post]
-func AddMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
+func addMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		requestUser := new(RequestMoveMoney)
 
@@ -185,7 +185,7 @@ func AddMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
 // @Produce json
 // @Param user body RequestMoveMoney true "User Data"
 // @Router /api/reduce [post]
-func ReduceMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
+func reduceMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		requestUser := new(RequestMoveMoney)
 
@@ -210,9 +210,9 @@ func ReduceMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFun
 // @Summary transferMoneyHandler
 // @Description Перевести деньги от пользователя к пользователю
 // @Produce json
-// @Param user body RequestMoveMoney true "User Data"
+// @Param TransactionsModel body TransferMoney true "User Data"
 // @Router /api/transfer [post]
-func TransferMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
+func transferMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		requestUser := new(TransferMoney)
 
@@ -239,7 +239,7 @@ func TransferMoneyHandler(transactionsStorage ItransactionsStorage) gin.HandlerF
 // @Produce json
 // @Param user body RequestUser true "User Data"
 // @Router /api/money [post]
-func GetMoneyUserHadler(userStorage IUserStorage) gin.HandlerFunc {
+func getMoneyUserHadler(userStorage IUserStorage) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		requestUser := new(RequestUser)
 

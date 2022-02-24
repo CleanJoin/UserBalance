@@ -13,7 +13,7 @@ import (
 // @termsOfService  https://github.com/CleanJoin/USERBALANCE/
 // @contact.name   Github.com
 // @contact.url    https://github.com/CleanJoin/USERBALANCE/
-// @host      localhost:8898
+// @host      localhost:8000
 // @BasePath  /
 func main() {
 	serverPort, _ := strconv.Atoi(os.Getenv("SERVER_PORT"))
